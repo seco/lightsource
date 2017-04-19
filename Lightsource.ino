@@ -1,46 +1,39 @@
+#include <Adafruit_GFX_AS.h>
+#include <Adafruit_ILI9341_fast_as.h>
 #include <Ticker.h>
 #include <Adafruit_NeoPixel.h>
-#include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPUpdateServer.h>
-#include <FS.h>
-#include "LightsourceRpc.h"
+#include "LightsourceHTTPHandlers.h"
 
-const char* ssid = "FAST3764-ED38";
-const char* password = "54dkl182";
+const char* ssid = "twinkle";
+const char* password = "analInvader";
+IPAddress ip(10, 10, 10, 1);
+IPAddress gw(10, 10, 10, 1);
+IPAddress mask(255, 255, 255, 0);
+static bool inSetup=false;
 
+#define LIGHT_HEART_LED   D0
+#define LIGHT_STRIP1_PIN  D1
+#define LIGHT_STRIP2_PIN  D2
+#define LIGHT_STRIP3_PIN  D3
+#define LIGHT_STRIP4_PIN  D6
+
+#define LIGHT_TFT_SCK     D5
+#define LIGHT_TFT_MOSI    D7
+#define LIGHT_TFT_CS      D8
+#define LIGHT_TFT_DC      D4
+
+Adafruit_ILI9341 tft = Adafruit_ILI9341();
 #define LIGHT_ALLPIXELS for (int i=0; i<4; i++)
-#define LIGHT_STRIP1_PIN D1
-#define LIGHT_STRIP2_PIN D2
-#define LIGHT_STRIP3_PIN D5
-#define LIGHT_STRIP4_PIN D6
-#define DBG_OUTPUT_PORT Serial
-
 Adafruit_NeoPixel strip1 = Adafruit_NeoPixel(255, LIGHT_STRIP1_PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip2 = Adafruit_NeoPixel(255, LIGHT_STRIP2_PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip3 = Adafruit_NeoPixel(255, LIGHT_STRIP3_PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip4 = Adafruit_NeoPixel(255, LIGHT_STRIP4_PIN, NEO_GRB + NEO_KHZ800);
-
 Ticker heartbeat;
-
 Adafruit_NeoPixel *pixels[4] = { &strip1, &strip2, &strip3, &strip4 };
-IPAddress ip(192, 168, 1, 123);
-IPAddress gw(192, 168, 1, 1);
-IPAddress dns(8,8,8,8);
-IPAddress mask(255, 255, 255, 0);
+extern ESP8266WebServer httpServer;
+extern ESP8266HTTPUpdateServer httpUpdater;
 
-ESP8266WebServer httpServer(80);
-ESP8266HTTPUpdateServer httpUpdater;
 LightsourceRpc lightsourceRpc;
-
-/* HTTP callbacks */
-static void httpLightConfig();
-static void httpFileList();
-static String httpGetContentType(String filename);
-static bool httpFileRead(String path);
-static void httpNotRegistered();
-static void httpRpc();
 
 /*
  *  MAIN PROGRAM
@@ -49,21 +42,28 @@ void setup(void){
   DBG_OUTPUT_PORT.begin(115200);
   DBG_OUTPUT_PORT.println();
   DBG_OUTPUT_PORT.println("Booting Sketch...");
+  heartbeat.attach(0.1, heartbeatLed);
+
+  DBG_OUTPUT_PORT.println("Init TDFT");
+  tft.begin();
+  tft.fillScreen(ILI9341_BLACK);
+  tft.setCursor(0, 0);
+  tft.setTextColor(ILI9341_WHITE);
+  tft.setTextSize(1);
+  
   pinMode(D0, OUTPUT);
   digitalWrite(D0, HIGH);
-  
-  WiFi.begin(ssid, password);
- 
-  while (WiFi.status() != WL_CONNECTED) {
-    digitalWrite(D0, LOW);
-    delay(55);
-    digitalWrite(D0, HIGH);
-    delay(55);
-    digitalWrite(D0, LOW);
-    DBG_OUTPUT_PORT.print(".");
-  }
+  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(ip, gw, mask);
+  WiFi.softAP(ssid, password, 11);
+  IPAddress myIP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(myIP);
 
-  WiFi.config(ip, dns, gw, mask);
+  tft.println("AP Name: ");
+  tft.println(ssid);
+  tft.println("AP IP address: ");
+  tft.println(myIP);
   
   DBG_OUTPUT_PORT.println("");
   DBG_OUTPUT_PORT.println("WiFi connected");
@@ -81,11 +81,22 @@ void setup(void){
   DBG_OUTPUT_PORT.println("Not registered location handler");
   httpServer.onNotFound(httpNotRegistered);
   
-  DBG_OUTPUT_PORT.print("Root handler");
+  DBG_OUTPUT_PORT.println("Root handler");
   httpServer.on("/", httpLightConfig);
 
-  DBG_OUTPUT_PORT.println("/list");
+  // Attach FS/http handlers
   httpServer.on("/list", HTTP_GET, httpFileList);
+  //load editor
+  httpServer.on("/edit", HTTP_GET, [](){
+    if(!httpFileRead("/edit.htm")) httpServer.send(404, "text/plain", "FileNotFound");
+  });
+  //create file
+  httpServer.on("/edit", HTTP_PUT, httpFileCreate);
+  //delete file
+  httpServer.on("/edit", HTTP_DELETE, httpFileDelete);
+  //first callback is called after the request has ended with all parsed arguments
+  //second callback handles file uploads at that location
+  httpServer.on("/edit", HTTP_POST, [](){ httpServer.send(200, "text/plain", ""); }, httpFileUpload);
 
   DBG_OUTPUT_PORT.println("/rpc");
   httpServer.on("/rpc", HTTP_GET, httpRpc);
@@ -103,19 +114,19 @@ void setup(void){
     while (dir.next()) {    
       String fileName = dir.fileName();
       size_t fileSize = dir.fileSize();
-      DBG_OUTPUT_PORT.printf("FS File: %s, size: %s\n", fileName.c_str(), formatBytes(fileSize).c_str());
+      DBG_OUTPUT_PORT.printf("FS File: %s, size: %s\r\n", fileName.c_str(), formatBytes(fileSize).c_str());
     }
-    DBG_OUTPUT_PORT.printf("\n");
+    DBG_OUTPUT_PORT.printf("\r\n");
   }
 
   DBG_OUTPUT_PORT.println("init led strips");
   LIGHT_ALLPIXELS { pixels[i]->begin(); }
-  LIGHT_ALLPIXELS { pixels[i]->setPixelColor(i, Adafruit_NeoPixel::Color(16,0,0)); }
+  LIGHT_ALLPIXELS { pixels[i]->setPixelColor(0, Adafruit_NeoPixel::Color(16,0,0)); }
   LIGHT_ALLPIXELS { pixels[i]->show(); }
-  
-  heartbeat.attach(0.6, heartbeatLed);
+  DBG_OUTPUT_PORT.println("Enter loop");
 
-  DBG_OUTPUT_PORT.println("attach MDNS and loop");
+  heartbeat.detach();
+  heartbeat.attach(0.4, heartbeatLed);
 }
 
 /*
@@ -139,104 +150,10 @@ String formatBytes(size_t bytes){
   }
 }
 
-static void heartbeatLed()
+void heartbeatLed()
 {
-  int state = digitalRead(D0);  // get the current state of GPIO1 pin
-  digitalWrite(D0, !state);     // set pin to the opposite state
-}
-
-void httpLightConfig()
-{
-  DBG_OUTPUT_PORT.println("HTTP> root handler");
-  httpFileRead("/index.html");
-}
-
-void httpFileList()
-{
-  DBG_OUTPUT_PORT.println("HTTP> file list handler");
-  
-  if(!httpServer.hasArg("dir")) {httpServer.send(500, "text/plain", "BAD ARGS"); return;}
-  
-  String path = httpServer.arg("dir");
-  DBG_OUTPUT_PORT.println("HTTP> " + path);
-  Dir dir = SPIFFS.openDir(path);
-  path = String();
-
-  String output = "[";
-  while(dir.next()){
-    File entry = dir.openFile("r");
-    if (output != "[") output += ',';
-    bool isDir = false;
-    output += "{\"type\":\"";
-    output += (isDir)?"dir":"file";
-    output += "\",\"name\":\"";
-    output += String(entry.name()).substring(1);
-    output += "\"}";
-    entry.close();
-  }
-  
-  output += "]";
-  httpServer.send(200, "text/json", output);
-}
-
-bool httpFileRead(String path)
-{
-  DBG_OUTPUT_PORT.println("HTTP> handleFileRead: " + path);
-  if(path.endsWith("/")) path += "index.html";
-  String contentType = httpGetContentType(path);
-  String pathWithGz = path + ".gz";
-  if(SPIFFS.exists(pathWithGz) || SPIFFS.exists(path)){
-    if(SPIFFS.exists(pathWithGz))
-      path += ".gz";
-    File file = SPIFFS.open(path, "r");
-    size_t sent = httpServer.streamFile(file, contentType);
-    file.close();
-    return true;
-  }
-  return false;
-}
-
-static void httpNotRegistered()
-{
-  if (!httpFileRead(httpServer.uri()))
-  {
-    String message = "Location not found in SPIFFS or not registsred as a callback \n\n";
-    message += "URI: ";
-    message += httpServer.uri();
-    message += "\nMethod: ";
-    message += (httpServer.method() == HTTP_GET)?"GET":"POST";
-    message += "\nArguments: ";
-    message += httpServer.args();
-    message += "\n";
-    for (uint8_t i=0; i<httpServer.args(); i++){
-     message += " NAME:"+httpServer.argName(i) + "\n VALUE:" + httpServer.arg(i) + "\n";
-    }
-    httpServer.send(404, "text/plain", message);
-    DBG_OUTPUT_PORT.print(message);
-  }
-}
-
-String httpGetContentType(String filename)
-{
-  if(httpServer.hasArg("download")) return "application/octet-stream";
-  else if(filename.endsWith(".htm")) return "text/html";
-  else if(filename.endsWith(".html")) return "text/html";
-  else if(filename.endsWith(".css")) return "text/css";
-  else if(filename.endsWith(".js")) return "application/javascript";
-  else if(filename.endsWith(".png")) return "image/png";
-  else if(filename.endsWith(".gif")) return "image/gif";
-  else if(filename.endsWith(".jpg")) return "image/jpeg";
-  else if(filename.endsWith(".ico")) return "image/x-icon";
-  else if(filename.endsWith(".xml")) return "text/xml";
-  else if(filename.endsWith(".pdf")) return "application/x-pdf";
-  else if(filename.endsWith(".zip")) return "application/x-zip";
-  else if(filename.endsWith(".gz")) return "application/x-gzip";
-  return "text/plain";
-}
-
-static void httpRpc()
-{
-  lightsourceRpc.process(httpServer);
+  int state = digitalRead(LIGHT_HEART_LED);  // get the current state of GPIO1 pin
+  digitalWrite(LIGHT_HEART_LED, !state);     // set pin to the opposite state
 }
 
 
