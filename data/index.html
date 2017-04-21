@@ -1,63 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="icon" href="favicon.ico">
     <title>Lightsource</title>
     <link href="bootstrap.min.css" rel="stylesheet">
     <link href="lightsource.css" rel="stylesheet">
-    <link href="bootstrap-colorpicker.min.css" rel="stylesheet">
-  </head>
+</head>
 
-  <body>
-    <div class="site-wrapper">
-      <div class="site-wrapper-inner">
-        <div class="cover-container">
-          <div class="masthead clearfix">
-            <div class="inner">
-              <h3 class="masthead-brand">Lightsource</h3>
-              <nav>
-                <ul class="nav masthead-nav">
-                  <li class="active"><a href="/">LEDs</a></li>
-                  <li><a href="/filelist">Files</a></li>
-                  <li><a href="/info">Info</a></li>
-                </ul>
-              </nav>
-            </div>
-          </div>
+<body>
+    <div class="container" role="main">
 
-          <div class="inner cover">
-		<input id="cp1" type="text" class="form-control" value="#ff0000" />
-		<input id="cp2" type="text" class="form-control" value="#00ff00" />
-		<input id="cp3" type="text" class="form-control" value="#0000ff" />
-		<input id="cp4" type="text" class="form-control" value="#ff00ff" />
-          </div>
+    <div class="page-header">
+        <h1>Strips</h1>
+    </div>
 
-          <div class="mastfoot">
-            <div class="inner">
-              <p>Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="row">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Pin</th>
+                <th>Name </th>
+                <th>Type </th>
+                <th>Length </th>
+            </tr>
+            </thead>
+
+            <tbody>
+                <form role="form" autocomplete="off">
+                <tr>
+                    <td>
+                        <button class="btn btn-success btn-add" type="button">
+                            <span class="glyphicon glyphicon-plus"></span>
+                        </button>
+
+                        <button class="btn btn-primary" type="button">
+                            <span class="glyphicon glyphicon-cloud-upload"></span>
+                        </button>
+
+                        <button class="btn btn-default" type="button">
+                            <span class="glyphicon glyphicon-check"></span>
+                        </button>
+                    </td>
+                </tr>
+                </form>
+            </tbody>
+        </table>
+    </div>
+
     </div>
     <script src="jquery.min.js"></script>
-    <script src="bootstrap.min.js"></script>
-    <script src="bootstrap-colorpicker.min.js"></script>
     <script src="jquery.jsonrpc.js"></script>
-    
-	<script>
-		$(function() {
-			$('#cp1').colorpicker();
-			$('#cp2').colorpicker();
-			$('#cp3').colorpicker();
-			$('#cp4').colorpicker();
-		});
-	</script>
-  </body>
+    <script src="jquery.serialize-object.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <script src="lightsource.js"></script>
+</body>
 </html>
