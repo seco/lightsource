@@ -1,45 +1,84 @@
-$.jsonRPC.setup({
-  endPoint: "/devel/lightsource/data/rpc.php",
-  namespace: "lightsource"
+var config;
+
+
+$(document).ready(function () {
+    config = $("#lightsource-config-table");
+    configStripAdd = $(".lightsource-add-strip");
+    configTest      = $(".lightsource-test-config");
+    tmplStrip            = $.templates("#lightsource-strip-template");
+    $.jsonRPC.request("init", {success: remoteConfigReceived, error: remoteConfigReceptionError});
+    $(configStripAdd).click(function (e) {
+        $(config).append(createStripRow(null,0));
+    });
+
+    $(configTest).click(function (e){
+        console.log($('#lightsource-config-form').serializeObject().strips);
+        $.jsonRPC.request("testConfig",
+            {
+                params:[$('form#lightsource-config-form').serializeObject().strips],
+                success: testConfigReceived,
+                error: testConfigReceptionError
+            }
+        );
+    });
+
 });
 
-function initialRequest()
-{
-  $.jsonRPC.request("init", {
-    success: function(result) {
-      console.log(result);
-    },
-    error: function(result) {
-      console.log("Error");
-      console.log(result);
-    }
+$.jsonRPC.setup({
+    endPoint: "/devel/lightsource/data/rpc.php",
+    namespace: "lightsource"
 });
+
+function removeSlice(slice)
+{
+    slice.remove();
+}
+function removeStrip(strip)
+{
+    strip.remove();
+}
+
+function renderSlicesTable(strip, slices)
+{
 
 }
-$(document).ready(function() {
-  initialRequest();
-});
 
-$(function()
+function renderStripsTable(strips)
 {
-  $(document).on('click', '.btn-add', function(e)
-  {
-    e.preventDefault();
+    console.log(strips);
+    $("#lightsource-config-form").html(tmplStrip.render({strips: strips}));
+}
 
-    var controlForm = $('.controls form:first'),
-        currentEntry = $(this).parents('.entry:first'),
-        newEntry = $(currentEntry.clone()).appendTo(controlForm);
+function remoteConfigReceived(remoteConfig)
+{
+    console.log("Received remote configuration");
+    console.log(remoteConfig.result);
 
-    newEntry.find('input').val('');
-    controlForm.find('.entry:not(:last) .btn-add')
-        .removeClass('btn-add').addClass('btn-remove')
-        .removeClass('btn-success').addClass('btn-danger')
-        .html('<span class="glyphicon glyphicon-minus"></span>');
-  }).on('click', '.btn-remove', function(e)
-  {
-    $(this).parents('.entry:first').remove();
+    if (remoteConfig.result.strips.length > 0)
+    {
+        renderStripsTable(remoteConfig.result.strips);
+    }
+    
+    $(function()
+    {
+        $(".colorpicker-selector").colorpicker({format: 'hex'}).on('changeColor',function(e)
+        {
+            $(e.target.nextElementSibling).css("background-color", e.value);
+        }); }
+    );
+}
 
-    e.preventDefault();
-    return false;
-  });
-});
+function remoteConfigReceptionError(o)
+{
+    console.log("Error receiving initial config from remote server");
+}
+
+function testConfigReceived(o)
+{
+    console.log("Config test success");
+}
+
+function testConfigReceptionError(o)
+{
+    console.log("Config test failed");
+}

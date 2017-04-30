@@ -1,0 +1,67 @@
+{
+  "strips": [
+    {
+      "name": "modular",
+      "pixels": 70,
+      "pin": "0",
+      "type": "NEOPIXEL",
+      "htmlColor": "#ff0000",
+      "slices": [
+        {
+          "name": "left side",
+          "start": 0,
+          "end": 8,
+          "htmlColor": "#000000"
+        },
+        {
+          "name": "right side",
+          "start": 0,
+          "end": 8,
+          "htmlColor": "#000000"
+        },
+        {
+          "name": "top",
+          "start": 0,
+          "end": 8,
+          "htmlColor": "#000000"
+        },
+        {
+          "name": "bottom",
+          "start": 0,
+          "end": 8,
+          "htmlColor": "#000000"
+        }
+      ]
+    },
+    {
+      "name": "rack",
+      "pixels": 70,
+      "pin": "1",
+      "type": "NEOPIXEL",
+      "htmlColor": "#ff0000",
+      "slices": [
+        {
+          "name": "top",
+          "start": 0,
+          "end": 8,
+          "htmlColor": "#ff0000"
+        }
+      ]
+    },
+    {
+      "name": "shelves",
+      "pixels": 70,
+      "pin": "2",
+      "type": "NEOPIXEL",
+      "htmlColor": "#ff0000",
+      "slices": [
+        {
+          "name": "middle",
+          "start": 0,
+          "end": 8,
+          "htmlColor": "#ff0000"
+        }
+      ]
+    }
+  ]
+}
