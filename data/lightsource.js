@@ -1,18 +1,17 @@
-var config;
-
-
 $(document).ready(function () {
-    config = $("#lightsource-config-table");
-    configStripAdd = $(".lightsource-add-strip");
-    configTest      = $(".lightsource-test-config");
-    tmplStrip            = $.templates("#lightsource-strip-template");
+    stripTemplate                   = $.templates("#lightsource-strip-template");
+    $.templates("lightsource-slice-template", "#lightsource-slice-template");
+
     $.jsonRPC.request("init", {success: remoteConfigReceived, error: remoteConfigReceptionError});
-    $(configStripAdd).click(function (e) {
-        $(config).append(createStripRow(null,0));
+
+    $(".lightsource-add-strip").click(function (e) {
+        console.log("onClick: .lightsource-add-strip");
+        addStrip(null);
     });
 
-    $(configTest).click(function (e){
-        console.log($('#lightsource-config-form').serializeObject().strips);
+    $(".lightsource-test-config").click(function (e){
+        console.log("onClick: .lightsource-test-config");
+        console.log($('#lightsource-config-form').serializeObject());
         $.jsonRPC.request("testConfig",
             {
                 params:[$('form#lightsource-config-form').serializeObject().strips],
@@ -29,6 +28,25 @@ $.jsonRPC.setup({
     namespace: "lightsource"
 });
 
+function addStrip(strip)
+{
+    console.log("addStrip:");
+}
+
+function addSlice(slice)
+{
+}
+
+function createEmptySlice()
+{
+
+}
+
+function createEmptyStrip()
+{
+
+}
+
 function removeSlice(slice)
 {
     slice.remove();
@@ -40,18 +58,18 @@ function removeStrip(strip)
 
 function renderSlicesTable(strip, slices)
 {
-
 }
 
 function renderStripsTable(strips)
 {
+    console.log("renderStripsTable:");
     console.log(strips);
-    $("#lightsource-config-form").html(tmplStrip.render({strips: strips}));
+    $("#lightsource-config-form").html(stripTemplate.render({strips: strips}));
 }
 
 function remoteConfigReceived(remoteConfig)
 {
-    console.log("Received remote configuration");
+    console.log("remoteConfigReceived:");
     console.log(remoteConfig.result);
 
     if (remoteConfig.result.strips.length > 0)
@@ -61,11 +79,29 @@ function remoteConfigReceived(remoteConfig)
     
     $(function()
     {
-        $(".colorpicker-selector").colorpicker({format: 'hex'}).on('changeColor',function(e)
-        {
-            $(e.target.nextElementSibling).css("background-color", e.value);
-        }); }
-    );
+        $(".colorpicker-selector").colorpicker(
+            {
+                format: 'hex',
+                align: 'left',
+                customClass: 'colorpicker-2x',
+                sliders: {
+                    saturation: {
+                        maxLeft: 200,
+                        maxTop: 200
+                    },
+                    hue: {
+                        maxTop: 200
+                    },
+                    alpha: {
+                        maxTop: 200
+                    }
+                }
+            }).on('changeColor',function(e)
+            {
+                $(e.target.previousElementSibling).css("background-color", e.value);
+            }
+        );
+    });
 }
 
 function remoteConfigReceptionError(o)

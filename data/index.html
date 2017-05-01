@@ -13,85 +13,96 @@
 <body>
     <script id="lightsource-strip-template" type="text/x-jsrender">
     {{for strips itemVar="~strip"}}
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <div class="row">
-                <div class="col-xs-3">
-                    <input type="text" class="form-control" placeholder="Strip Name" value="{{:~strip.name}}">
-                </div>
-                <div class="col-xs-1">
-                    <input type="number" class="form-control" min="0" max="255" value="{{:~strip.pin}}">
-                </div>
-                <div class="col-xs-2">
-                    <input type="text" class="form-control" value="{{:~strip.type}}">
-                </div>
-                <div class="col-xs-2">
-                    <div class="btn-group" role="group" aria-label="">
-                        <input value="{{:~strip.htmlColor}}" type="button" class="btn btn-default colorpicker-selector" />
-                        <button type="button" style="background-color: {{:~strip.htmlColor}}" class="btn btn-default">
-                            &nbsp;
-                        </button>
+            <table class="table table-xtra-condensed table-borderless">
+            <thead>
+            <tr class="active">
+                <th>Pin</th>
+                <th>Name</th>
+                <th>Color</th>
+                <th colspan="2">Type</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr>
+                <td>
+                    <input type="number" name="strips[][pin]" class="form-control input-sm" min="0" max="255" value="{{:~strip.pin}}">
+                </td>
+                <td>
+                    <input type="text" name="strips[][name]" class="form-control input-sm" value="{{:~strip.name}}">
+                </td>
+                <td>
+                    <div class="input-group colorpicker-component colorpicker-selector">
+                        <input type="text" name="strips[][htmlColor]" value="{{:~strip.htmlColor}}" class="form-control input-sm" />
+                        <span class="input-group-addon"><i></i></span>
                     </div>
-                </div>
+                </td>
+                <td>
+                    <input type="number" name="strips[][type]" class="form-control input-sm" min="0" max="255" value="{{:~strip.type}}">
+                </td>
 
-                <div class="col-xs-3 pull-right">
-                    <button class="btn btn-sm btn-danger btn-add" type="button">
+
+                <td class="pull-right">
+                    <button class="btn btn-sm btn-danger" type="button">
                         <span class="glyphicon glyphicon-remove"></span>
                     </button>
-                </div>
-            </div>
-        </div>
-        <div class="panel-body">
-            <div class="row">
-                <div class="col-xs-2">
-                <button class="btn btn-sm btn-success btn-add lightsource-add-strip" type="button">
-                                <span class="glyphicon glyphicon-plus"></span>
-                            </button>
-                </div>
-            </div>
-            {{for ~strip.slices itemVar="~slice"}}
-                <div class="row">
-                    <div class="col-xs-2" style="opacity: 0.5">
-                    </div>
-                    <div class="col-xs-2">
-                        <input type="text" class="form-control input-sm" placeholder="Strip Name" value="{{:~slice.name}}">
-                    </div>
-                    <div class="col-xs-1">
-                        <input type="number" class="form-control input-sm" min="0" max="255" value="{{:~slice.start}}">
-                    </div>
-                    <div class="col-xs-2">
-                        <input type="number" class="form-control input-sm" min="0" max="255" value="{{:~slice.end}}">
-                    </div>
-                    <div class="col-xs-2">
-                        <div class="btn-group btn-group-sm" role="group" aria-label="slice">
-                            <input value="{{:~slice.htmlColor}}" type="button" class="btn btn-default colorpicker-selector" />
-                            <button type="button btn-xs" style="background-color: {{:~slice.htmlColor}}" class="btn btn-default">
-                                &nbsp;
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="col-xs-3 pull-right">
-                        <button class="btn btn-danger btn-xs" type="button">
+                </td>
+                </tr>
+                </tbody>
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Color</th>
+                    <th>Start</th>
+                    <th>End</th>
+                </thead>
+                </tr>
+                <tbody>
+                {{for ~strip.slices itemVar="~slice" tmpl="lightsource-slice-template"}}
+                {{/for}}
+                <tr>
+                    <th>
+                        <button class="btn btn-sm btn-success btn-add lightsource-add-strip" type="button">
+                            <span class="glyphicon glyphicon-plus"></span>
+                        </button>
+                    </th>
+                </tr>
+                </tbody>
+        </table>
+    {{/for}}
+    </script>
+    <script id="lightsource-slice-template" type="text/x-jsrender">
+                <tr>
+                    <td class="pull-right">
+                        <button class="btn btn-sm btn-danger" type="button">
                             <span class="glyphicon glyphicon-remove"></span>
                         </button>
-                    </div>
+                    </td>
+                    <td>
+                        <input type="text" name="strips[{{:#parent.getIndex()}}][slices][][name]" class="form-control input-sm" value="{{:~slice.name}}" />
+                    </td>
+                    <td>
+                        <div class="input-group colorpicker-component colorpicker-selector">
+                            <input type="text" name="strips[{{:#parent.getIndex()}}][slices][][htmlColor]" value="{{:~slice.htmlColor}}" class="form-control input-sm" />
+                            <span class="input-group-addon"><i></i></span>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="number" name="strips[{{:#parent.getIndex()}}][slices][][start]" class="form-control input-sm" min="0" max="255" value="{{:~slice.start}}">
+                    </td>
+                    <td>
+                        <input type="number" name="strips[{{:#parent.getIndex()}}][slices][][end]" class="form-control input-sm" min="0" max="255" value="{{:~slice.end}}">
+                    </td>
 
-                </div>
-                <p/>
-            {{/for}}
-        </div>
-    </div>
-    {{/for}}
+
+                </tr>
     </script>
 
     <div class="container">
 
         <div class="row">
-            <h2 class="text-muted">Lightsource config</h3>
+            <h2 class="text-muted">Lightsource config</h2>
         </div>
-
-        <p />
 
         <div class="row">
 
@@ -99,11 +110,11 @@
                 <span class="glyphicon glyphicon-plus"></span>
             </button>
 
-            <button class="btn btn-sm btn-primarylightsource-upload-config" type="button">
+            <button class="btn btn-sm btn-primary lightsource-upload-config" type="button">
                 <span class="glyphicon glyphicon-cloud-upload"></span>
             </button>
 
-            <button class="btn btn-sm btn-defaultlightsource-test-config" type="button">
+            <button class="btn btn-sm btn-default lightsource-test-config" type="button">
                 <span class="glyphicon glyphicon-check"></span>
             </button>
         </div>
@@ -111,7 +122,9 @@
         <p />
 
         <div class="row">
-            <form role="form" autocomplete="off" id="lightsource-config-form"></form>
+            <form role="form" autocomplete="off" id="lightsource-config-form">
+
+            </form>
         </div>
     </div>
 

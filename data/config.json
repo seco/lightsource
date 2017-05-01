@@ -4,7 +4,7 @@
       "name": "modular",
       "pixels": 70,
       "pin": "0",
-      "type": "NEOPIXEL",
+      "type": 0,
       "htmlColor": "#ff0000",
       "slices": [
         {
@@ -37,7 +37,7 @@
       "name": "rack",
       "pixels": 70,
       "pin": "1",
-      "type": "NEOPIXEL",
+      "type": 0,
       "htmlColor": "#ff0000",
       "slices": [
         {
@@ -52,7 +52,7 @@
       "name": "shelves",
       "pixels": 70,
       "pin": "2",
-      "type": "NEOPIXEL",
+      "type": 0,
       "htmlColor": "#ff0000",
       "slices": [
         {
