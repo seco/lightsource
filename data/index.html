@@ -42,7 +42,7 @@
 
 
                 <td class="pull-right">
-                    <button class="btn btn-sm btn-danger" type="button">
+                    <button class="btn btn-sm btn-danger" type="button" onClick="removeStrip(this)">
                         <span class="glyphicon glyphicon-remove"></span>
                     </button>
                 </td>
@@ -58,15 +58,16 @@
                 </thead>
                 </tr>
                 <tbody>
-                {{for ~strip.slices itemVar="~slice" tmpl="lightsource-slice-template"}}
-                {{/for}}
-                <tr>
-                    <th>
-                        <button class="btn btn-sm btn-success btn-add lightsource-add-strip" type="button">
-                            <span class="glyphicon glyphicon-plus"></span>
-                        </button>
-                    </th>
-                </tr>
+                    {{for ~strip.slices itemVar="~slice" ~stripIndex=#index tmpl="lightsource-slice-template"}}
+                    {{/for}}
+
+                    <tr>
+                        <th>
+                            <button class="btn btn-sm btn-success btn-add" type="button" onClick="addSlice(this, {{:#getIndex()}})">
+                                <span class="glyphicon glyphicon-plus"></span>
+                            </button>
+                        </th>
+                    </tr>
                 </tbody>
         </table>
     {{/for}}
@@ -74,27 +75,25 @@
     <script id="lightsource-slice-template" type="text/x-jsrender">
                 <tr>
                     <td class="pull-right">
-                        <button class="btn btn-sm btn-danger" type="button">
+                        <button class="btn btn-sm btn-danger" type="button" onClick="removeSlice(this)">
                             <span class="glyphicon glyphicon-remove"></span>
                         </button>
                     </td>
                     <td>
-                        <input type="text" name="strips[{{:#parent.getIndex()}}][slices][][name]" class="form-control input-sm" value="{{:~slice.name}}" />
+                        <input type="text" name="strips[{{:~stripIndex}}][slices][][name]" class="form-control input-sm" value="{{:name}}" />
                     </td>
                     <td>
                         <div class="input-group colorpicker-component colorpicker-selector">
-                            <input type="text" name="strips[{{:#parent.getIndex()}}][slices][][htmlColor]" value="{{:~slice.htmlColor}}" class="form-control input-sm" />
+                            <input type="text" name="strips[{{:~stripIndex}}][slices][][htmlColor]" value="{{:htmlColor}}" class="form-control input-sm" />
                             <span class="input-group-addon"><i></i></span>
                         </div>
                     </td>
                     <td>
-                        <input type="number" name="strips[{{:#parent.getIndex()}}][slices][][start]" class="form-control input-sm" min="0" max="255" value="{{:~slice.start}}">
+                        <input type="number" name="strips[{{:~stripIndex}}][slices][][start]" class="form-control input-sm" min="0" max="255" value="{{:start}}">
                     </td>
                     <td>
-                        <input type="number" name="strips[{{:#parent.getIndex()}}][slices][][end]" class="form-control input-sm" min="0" max="255" value="{{:~slice.end}}">
+                        <input type="number" name="strips[{{:~stripIndex}}][slices][][end]" class="form-control input-sm" min="0" max="255" value="{{:end}}">
                     </td>
-
-
                 </tr>
     </script>
 
@@ -106,7 +105,7 @@
 
         <div class="row">
 
-            <button class="btn btn-sm btn-success btn-add lightsource-add-strip" type="button">
+            <button class="btn btn-sm btn-success btn-add" type="button" onClick="addStrip(this)">
                 <span class="glyphicon glyphicon-plus"></span>
             </button>
 

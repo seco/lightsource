@@ -1,13 +1,9 @@
 $(document).ready(function () {
     stripTemplate                   = $.templates("#lightsource-strip-template");
+    sliceTemplate                   = $.templates("#lightsource-slice-template");
     $.templates("lightsource-slice-template", "#lightsource-slice-template");
 
     $.jsonRPC.request("init", {success: remoteConfigReceived, error: remoteConfigReceptionError});
-
-    $(".lightsource-add-strip").click(function (e) {
-        console.log("onClick: .lightsource-add-strip");
-        addStrip(null);
-    });
 
     $(".lightsource-test-config").click(function (e){
         console.log("onClick: .lightsource-test-config");
@@ -28,42 +24,48 @@ $.jsonRPC.setup({
     namespace: "lightsource"
 });
 
-function addStrip(strip)
+function addStrip(e)
 {
-    console.log("addStrip:");
+    $("#lightsource-config-form").append(stripTemplate.render({strips: createEmptyStrip()}));
+    updateColorpickers();
 }
 
-function addSlice(slice)
+function addSlice(e, strip)
 {
+    $(sliceTemplate.render(createEmptySlice(), {stripIndex: strip})).insertAfter($(e).parent().parent().prev());
+    updateColorpickers();
+}
+
+function removeSlice(e)
+{
+    $(e).parent().parent().remove();
+}
+
+function removeStrip(e)
+{
+    $(e).parent().parent().parent().parent().remove();
 }
 
 function createEmptySlice()
 {
-
+    return ({name: "new slice", start: 0, end: 8, htmlColor: "#00ff00"});
 }
 
 function createEmptyStrip()
 {
-
-}
-
-function removeSlice(slice)
-{
-    slice.remove();
-}
-function removeStrip(strip)
-{
-    strip.remove();
-}
-
-function renderSlicesTable(strip, slices)
-{
+    strip = {
+        name: "new strip",
+        pin: 0,
+        length: 8,
+        htmlColor: "#ff0000",
+        type: 0,
+        slices: createEmptySlice()
+    }
+    return strip;
 }
 
 function renderStripsTable(strips)
 {
-    console.log("renderStripsTable:");
-    console.log(strips);
     $("#lightsource-config-form").html(stripTemplate.render({strips: strips}));
 }
 
@@ -76,7 +78,11 @@ function remoteConfigReceived(remoteConfig)
     {
         renderStripsTable(remoteConfig.result.strips);
     }
-    
+    updateColorpickers();
+}
+
+function updateColorpickers()
+{
     $(function()
     {
         $(".colorpicker-selector").colorpicker(
