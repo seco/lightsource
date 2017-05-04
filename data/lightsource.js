@@ -26,13 +26,17 @@ $.jsonRPC.setup({
 
 function addStrip(e)
 {
-    $("#lightsource-config-form").append(stripTemplate.render({strips: createEmptyStrip()}));
+    var helper = {stripIndex: lastStripIndex};
+    $("#lightsource-config-form").append(stripTemplate.render(createEmptyStrip(), helper));
     updateColorpickers();
+
+    lastStripIndex++;
 }
 
-function addSlice(e, strip)
+function addSlice(e)
 {
-    $(sliceTemplate.render(createEmptySlice(), {stripIndex: strip})).insertAfter($(e).parent().parent().prev());
+    stripIndex = e.getAttribute("strip");
+    $(sliceTemplate.render(createEmptySlice(), {stripIndex: stripIndex})).insertBefore($(e).parent().parent());
     updateColorpickers();
 }
 
@@ -58,16 +62,24 @@ function createEmptyStrip()
         pin: 0,
         length: 8,
         htmlColor: "#ff0000",
-        type: 0,
-        slices: createEmptySlice()
-    }
+        type: 0
+    };
+
     return strip;
 }
 
 function renderStripsTable(strips)
 {
-    $("#lightsource-config-form").html(stripTemplate.render({strips: strips}));
+    for (n=0; n<strips.length; n++)
+    {
+        var helper = {stripIndex: n};
+        $("#lightsource-config-form").append(stripTemplate.render(strips[n], helper));
+    }
+
+    lastStripIndex = n;
 }
+
+
 
 function remoteConfigReceived(remoteConfig)
 {

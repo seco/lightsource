@@ -12,7 +12,7 @@
 
 <body>
     <script id="lightsource-strip-template" type="text/x-jsrender">
-    {{for strips itemVar="~strip"}}
+
             <table class="table table-xtra-condensed table-borderless">
             <thead>
             <tr class="active">
@@ -25,19 +25,19 @@
             <tbody>
                 <tr>
                 <td>
-                    <input type="number" name="strips[][pin]" class="form-control input-sm" min="0" max="255" value="{{:~strip.pin}}">
+                    <input type="number" name="strips[][pin]" class="form-control input-sm" min="0" max="255" value="{{:pin}}">
                 </td>
                 <td>
-                    <input type="text" name="strips[][name]" class="form-control input-sm" value="{{:~strip.name}}">
+                    <input type="text" name="strips[][name]" class="form-control input-sm" value="{{:name}}">
                 </td>
                 <td>
                     <div class="input-group colorpicker-component colorpicker-selector">
-                        <input type="text" name="strips[][htmlColor]" value="{{:~strip.htmlColor}}" class="form-control input-sm" />
+                        <input type="text" name="strips[][htmlColor]" value="{{:htmlColor}}" class="form-control input-sm" />
                         <span class="input-group-addon"><i></i></span>
                     </div>
                 </td>
                 <td>
-                    <input type="number" name="strips[][type]" class="form-control input-sm" min="0" max="255" value="{{:~strip.type}}">
+                    <input type="number" name="strips[][type]" class="form-control input-sm" min="0" max="255" value="{{:type}}">
                 </td>
 
 
@@ -58,19 +58,19 @@
                 </thead>
                 </tr>
                 <tbody>
-                    {{for ~strip.slices itemVar="~slice" ~stripIndex=#index tmpl="lightsource-slice-template"}}
+                    {{for slices itemVar="~slice" tmpl="lightsource-slice-template"}}
                     {{/for}}
 
                     <tr>
                         <th>
-                            <button class="btn btn-sm btn-success btn-add" type="button" onClick="addSlice(this, {{:#getIndex()}})">
+                            <button class="btn btn-sm btn-success btn-add" type="button" strip="{{:~stripIndex}}" onClick="addSlice(this)">
                                 <span class="glyphicon glyphicon-plus"></span>
                             </button>
                         </th>
                     </tr>
                 </tbody>
         </table>
-    {{/for}}
+
     </script>
     <script id="lightsource-slice-template" type="text/x-jsrender">
                 <tr>
