@@ -1,21 +1,20 @@
 #ifndef LIGHTSOURCE_RPC_H
 #define LIGHTSOURCE_RPC_H
 
-#include <ESP8266WebServer.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPUpdateServer.h>
-#include <ArduinoJson.h>
-#include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <FS.h>
-
-#define DBG_OUTPUT_PORT Serial
+#include "LightsourceStrips.h"
+#include "Lightsource.h"
 
 class LightsourceRpc
 {
-  public:
-    LightsourceRpc();
-    void process(ESP8266WebServer &srv);
+	public:
+		LightsourceRpc(){}
+		~LightsourceRpc();
+		void begin();
+		void process(ESP8266WebServer &srv);
+		String init( JsonObject &request);
+		String testConfig( JsonObject &request);
+		String writeConfig( JsonObject &request);
+	private:
+		LightsourceStrips *lightsourceStrips;
 };
-
 #endif

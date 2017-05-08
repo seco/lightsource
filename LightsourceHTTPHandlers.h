@@ -12,5 +12,5 @@ void httpFileDelete();
 void httpFileUpload();
 void httpNotRegistered();
 void httpRpc();
-
+void registerHTTPHandlers();
 #endif

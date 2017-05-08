@@ -3,11 +3,29 @@
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 File fsUploadFile;
+extern LightsourceRpc lightsourceRpc;
+
+void registerHTTPHandlers()
+{
+	DBG("> registerHandlers\n");
+ 	httpServer.onNotFound(httpNotRegistered);
+  	httpServer.on("/", httpLightConfig);
+  	httpServer.on("/list", HTTP_GET, httpFileList);
+  	httpServer.on("/edit", HTTP_GET, [](){
+    	if(!httpFileRead("/edit.htm")) httpServer.send(404, "text/plain", "FileNotFound");
+  	});
+  	httpServer.on("/edit", HTTP_PUT, httpFileCreate);
+  	httpServer.on("/edit", HTTP_DELETE, httpFileDelete);
+  	httpServer.on("/edit", HTTP_POST, [](){ httpServer.send(200, "text/plain", ""); }, httpFileUpload);
+  	httpServer.on("/rpc", HTTP_POST, httpRpc);
+  	httpServer.on("/rpc/", HTTP_POST, httpRpc);
+  	httpUpdater.setup(&httpServer);
+}
 
 void httpLightConfig()
 {
-  DBG_OUTPUT_PORT.println("HTTP> root handler");
-  httpFileRead("/index.html");
+  	DBG("httpLightConfig> root\n");
+  	httpFileRead("/index.html");
 }
 
 void httpFileCreate()
@@ -15,7 +33,7 @@ void httpFileCreate()
   if(httpServer.args() == 0)
     return httpServer.send(500, "text/plain", "BAD ARGS");
   String path = httpServer.arg(0);
-  DBG_OUTPUT_PORT.println("HTTP> handleFileCreate: " + path);
+  DBG("HTTP> handleFileCreate: %s\n", path.c_str());
   if(path == "/")
     return httpServer.send(500, "text/plain", "BAD PATH");
   if(SPIFFS.exists(path))
@@ -145,22 +163,13 @@ String httpGetContentType(String filename)
   else if(filename.endsWith(".pdf")) return "application/x-pdf";
   else if(filename.endsWith(".zip")) return "application/x-zip";
   else if(filename.endsWith(".gz")) return "application/x-gzip";
+  else if(filename.endsWith(".json")) return "application/json";
   return "text/plain";
 }
 
 void httpRpc()
 {
   DBG_OUTPUT_PORT.println("HTTP> httpRpc");
-  String message = "Location not found in SPIFFS or not registsred as a callback \r\n";
-  message += "URI: ";
-  message += httpServer.uri();
-  message += "\r\nMethod: ";
-  message += (httpServer.method() == HTTP_GET)?"GET":"POST";
-  message += "\r\nArguments: ";
-  for (uint8_t i=0; i<httpServer.args(); i++)
-  {
-     message += " NAME:"+httpServer.argName(i) + "\n VALUE:" + httpServer.arg(i) + "\r\n";
-  }
-  DBG_OUTPUT_PORT.println(message);
+  lightsourceRpc.process(httpServer);
 }
 
